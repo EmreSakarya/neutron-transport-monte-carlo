@@ -2,14 +2,17 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.special import expn
+import os
+
+# Create docs folder if not exists
+os.makedirs("docs", exist_ok=True)
 
 # --- GIVEN PARAMETERS ---
-SIGMA_A = 0.5   
-H = 3.0        
+SIGMA_A = 0.5    
+H = 3.0         
 S_BAR = 2.0 * H
 N_VALUES = [10**2, 10**4, 10**6]
 
-# --- ANALYTICAL SOLUTION ---
 def analytic_solution(sigma_a, h):
     # Analytic solution for escape probability and blackness
     tau = sigma_a * h
@@ -18,14 +21,13 @@ def analytic_solution(sigma_a, h):
     beta = sigma_a * (2.0 * h) * p_esc
     return p_esc, beta
 
-# --- MONTE CARLO SIMULATION ---
 def monte_carlo_run(N, sigma_a, h, seed):
     rng = np.random.default_rng(seed)
 
-    # Neutron start positions (Uniform z in [0, H])
+    # Neutron start positions
     z = rng.uniform(0.0, h, size=N)
 
-    # Direction cosine (Isotropic -> Uniform mu in [-1, 1])
+    # Direction cosine
     mu = rng.uniform(-1.0, 1.0, size=N)
 
     # Avoid division by zero
@@ -39,10 +41,10 @@ def monte_carlo_run(N, sigma_a, h, seed):
     xi = rng.random(size=N)
     free_path = -np.log(xi) / sigma_a
 
-    # Check if neutrons escape
+    # Check neutrons escape
     escaped = free_path >= d_boundary
 
-    # Monte Carlo Estimators
+    # Monte Carlo 
     p_mc = np.mean(escaped)
     beta_mc = sigma_a * (2.0 * h) * p_mc
 
@@ -56,10 +58,8 @@ def monte_carlo_run(N, sigma_a, h, seed):
 if __name__ == "__main__":
     p_an, beta_an = analytic_solution(SIGMA_A, H)
 
-    print("Analytical reference values:")
-    print(f"P_esc = {p_an:.6f}")
-    print(f"beta  = {beta_an:.6f}")
-    print("-" * 30)
+    print(f"{'Analytical Reference':<25} | P_esc = {p_an:.6f} | beta = {beta_an:.6f}")
+    print("-" * 60)
 
     results = []
 
@@ -82,11 +82,11 @@ if __name__ == "__main__":
 
     df = pd.DataFrame(results)
 
-    print("Monte Carlo results:")
+    print("Monte Carlo Results:")
     print(df.to_string(index=False))
-    print()
+    print("\nGenerating plots in 'docs/' folder...")
 
-    # --- PLOTTING ---
+    # ---- PLOTTING ----
     N = df["N_T"].to_numpy()
     Pmc = df["P_esc_MC"].to_numpy()
     Bmc = df["beta_MC"].to_numpy()
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     P_lo, P_hi = p_an - 1.96 * sP, p_an + 1.96 * sP
     B_lo, B_hi = beta_an - 1.96 * sB, beta_an + 1.96 * sB
 
-    # Figure 1: Convergence plots (P_esc and Beta)
+    # Figure 1: Convergence plots
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5))
 
     ax1.plot(N, Pmc, marker="o", linewidth=2, label="Monte Carlo")
@@ -121,32 +121,36 @@ if __name__ == "__main__":
     ax2.legend()
 
     plt.tight_layout()
-    plt.savefig("convergence_plot.png")  # Saves this plot for README
-    print("Graph saved as 'convergence_plot.png'")
-    # plt.show() 
+    plt.savefig("docs/convergence_plot.png")
 
     # Figure 2: Relative error scaling
     plt.figure(figsize=(7.5, 5.5))
     plt.loglog(N, 100 * errP, marker="o", linewidth=2, label="Relative error (%)")
+
     ref = (100 * errP[0]) * np.sqrt(N[0] / N)
     plt.loglog(N, ref, linestyle=":", linewidth=2, label="$\\sim 1/\\sqrt{N_T}$")
+
     plt.xlabel("Number of particles $N_T$")
     plt.ylabel("Relative error (%)")
     plt.title("Relative error scaling")
     plt.grid(True, which="both", alpha=0.4)
     plt.legend()
     plt.tight_layout()
-    # plt.show()
+    plt.savefig("docs/relative_error.png")
 
     # Figure 3: Statistical uncertainty
     plt.figure(figsize=(7.5, 5.5))
     plt.loglog(N, sP, marker="d", linewidth=2, label="$\\sigma_P$")
+
     ref_s = sP[0] * np.sqrt(N[0] / N)
     plt.loglog(N, ref_s, linestyle=":", linewidth=2, label="$\\sim 1/\\sqrt{N_T}$")
+
     plt.xlabel("Number of particles $N_T$")
-    plt.ylabel("Statistical uncertainty")
+    plt.ylabel("Statistical uncertainty or sigma")
     plt.title("Uncertainty scaling")
     plt.grid(True, which="both", alpha=0.4)
     plt.legend()
     plt.tight_layout()
-    # plt.show()
+    plt.savefig("docs/uncertainty.png")
+
+    print("Done. Graphs saved to 'docs/' folder.")
