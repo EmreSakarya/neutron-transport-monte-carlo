@@ -22,7 +22,7 @@ It calculates the **Escape Probability ($P_{esc}$)** and **Blackness ($\beta$)**
 
 The simulation results converge to the exact analytical values as the number of particles increases. The plot below shows the convergence of the Escape Probability with the 95% confidence interval shaded.
 
-![Convergence Plot](docs/fig1_convergence.png)
+![Convergence Plot](docs/convergence_plot.png)
 
 ### Results Summary
 Comparison of Monte Carlo results with the Analytical Reference ($P_{esc} \approx 0.2955$).
@@ -74,4 +74,4 @@ This script will:
 
 ---
 
-*For detailed physics and derivations, please refer to the [Project Report](docs/Montecarlo.pdf).*
+*For detailed physics and derivations, please refer to the [Project Report](docs/Escapeprobablity-montecarlo.pdf).*
