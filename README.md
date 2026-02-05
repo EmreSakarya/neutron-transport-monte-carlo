@@ -14,26 +14,26 @@ It calculates the **Escape Probability ($P_{esc}$)** and **Blackness ($\beta$)**
 * **Source:** Uniformly distributed isotropic neutron source.
 * **Analytical Solution:**
   $$P_{esc} = \frac{1 - 2E_3(\tau)}{2\tau}, \quad \beta = \Sigma_a (2H) P_{esc}$$
-  where $\tau = \Sigma_a H$ is the optical thickness.
-* **Monte Carlo Method:** Simulates random particle paths and absorption events to estimate escape probabilities statistically.
+  where $\tau = \Sigma_a H = 1.5$ (Optical Thickness).
 
 ---
 
 ## 📊 Visuals & Results
 
-The simulation results converge to the exact analytical solution as the number of particles increases. The plot below shows the convergence for both Escape Probability and Blackness, with the 95% confidence interval shaded.
+The simulation results converge to the exact analytical values as the number of particles increases. The plot below shows the convergence of the Escape Probability with the 95% confidence interval shaded.
 
-![Convergence Plot](docs/convergence_plot.png)
+![Convergence Plot](docs/fig1_convergence.png)
 
-**Results Summary:**
+### Results Summary
+Comparison of Monte Carlo results with the Analytical Reference ($P_{esc} \approx 0.2955$).
 
 | Particles ($N$) | $P_{MC}$ (Simulation) | Relative Error (%) |
 | :--- | :--- | :--- |
-| $10^2$ | 0.2900 | 3.5% |
-| $10^4$ | 0.3015 | 0.3% |
-| $10^6$ | 0.3005 | 0.02% |
+| $10^2$ | 0.2400 | ~18.8% |
+| $10^4$ | 0.2922 | ~1.12% |
+| $10^6$ | 0.2965 | ~0.35% |
 
-*Exact Analytical Value:* $P_{esc} \approx 0.3006$
+*Exact Analytical Value:* $P_{esc} = 0.295507$
 
 ---
 
@@ -42,9 +42,9 @@ The simulation results converge to the exact analytical solution as the number o
     neutron-transport-monte-carlo/
     ├── docs/
     │   ├── Montecarlo.pdf         # Detailed project report
-    │   └── convergence_plot.png   # Result graph
+    │   └── fig1_convergence.png   # Convergence graph
     ├── src/
-    │   └── monte_carlo_slab.py    # Main Python script
+    │   └── monte_carlo_slab.py    # Main simulation code
     ├── requirements.txt           # Python dependencies
     └── README.md
 
@@ -61,7 +61,7 @@ The simulation results converge to the exact analytical solution as the number o
 This script will:
 1. Calculate the exact analytical values.
 2. Run Monte Carlo simulations for $N=10^2, 10^4, 10^6$.
-3. Print a comparison table to the console.
+3. Print the comparison table to the console.
 4. Save the convergence plot to the `docs/` folder.
 
 ---
