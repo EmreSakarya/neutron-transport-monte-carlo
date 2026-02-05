@@ -5,37 +5,33 @@
 
 ## ⚛️ Project Overview
 
-This project investigates the neutron transport problem in a purely absorbing **slab geometry** (infinite plate). It calculates the **Escape Probability ($P_{esc}$)** and **Blackness ($\beta$)** of the slab using stochastic **Monte Carlo** simulations and compares the results with the exact analytical solution derived from exponential integral functions ($E_3$).
+This project investigates the neutron transport problem in a purely absorbing **slab geometry** (infinite plate) with thickness $H=3.0$ and absorption cross-section $\Sigma_a=0.5$.
 
-The study demonstrates the convergence of the Monte Carlo method as the number of simulated particles ($N$) increases from $10^2$ to $10^6$, confirming the $1/\sqrt{N}$ error scaling law.
+It calculates the **Escape Probability ($P_{esc}$)** and **Blackness ($\beta$)** using stochastic **Monte Carlo** simulations ($N=10^2, 10^4, 10^6$) and compares them with the exact **Analytical Solution** derived from exponential integral functions ($E_3$).
 
 ### 🔬 Physics & Methodology
-* **Geometry:** 1D Slab of thickness $H = 3.0$ cm.
-* **Source:** Uniformly distributed isotropic neutron source inside the slab.
-* **Interaction:** Pure absorption ($\Sigma_a = 0.5$ cm$^{-1}$).
-* **Analytical Solution:** Based on the $E_3$ function:
-$$P_{esc} = \frac{1 - 2E_3(\tau)}{2\tau}$$
-* **Monte Carlo Method:**
-  1.  Sample position $z$ uniformly in $[0, H]$.
-  2.  Sample direction cosine $\mu$ uniformly in $[-1, 1]$.
-  3.  Sample free path length from exponential distribution.
-  4.  Check if particle reaches the boundary before absorption.
+* **Geometry:** 1D Slab, Thickness $H = 3.0$ cm.
+* **Source:** Uniformly distributed isotropic neutron source.
+* **Analytical Solution:**
+  $$P_{esc} = \frac{1 - 2E_3(\tau)}{2\tau}, \quad \beta = \Sigma_a (2H) P_{esc}$$
+  where $\tau = \Sigma_a H$ is the optical thickness.
+* **Monte Carlo Method:** Simulates random particle paths and absorption events to estimate escape probabilities statistically.
 
 ---
 
 ## 📊 Visuals & Results
 
-The simulation tracks the convergence of the escape probability and blackness towards the analytical reference values.
+The simulation results converge to the exact analytical solution as the number of particles increases. The plot below shows the convergence for both Escape Probability and Blackness, with the 95% confidence interval shaded.
 
 ![Convergence Plot](docs/convergence_plot.png)
-*(Note: Upload the generated 'convergence_plot.png' to the docs/ folder)*
 
 **Results Summary:**
+
 | Particles ($N$) | $P_{MC}$ (Simulation) | Relative Error (%) |
 | :--- | :--- | :--- |
-| $10^2$ | 0.2900 | ~3.5% |
-| $10^4$ | 0.3015 | ~0.3% |
-| $10^6$ | 0.3005 | ~0.02% |
+| $10^2$ | 0.2900 | 3.5% |
+| $10^4$ | 0.3015 | 0.3% |
+| $10^6$ | 0.3005 | 0.02% |
 
 *Exact Analytical Value:* $P_{esc} \approx 0.3006$
 
@@ -46,9 +42,9 @@ The simulation tracks the convergence of the escape probability and blackness to
     neutron-transport-monte-carlo/
     ├── docs/
     │   ├── Montecarlo.pdf         # Detailed project report
-    │   └── convergence_plot.png   # Convergence graph
+    │   └── convergence_plot.png   # Result graph
     ├── src/
-    │   └── monte_carlo_slab.py    # Simulation source code
+    │   └── monte_carlo_slab.py    # Main Python script
     ├── requirements.txt           # Python dependencies
     └── README.md
 
@@ -57,14 +53,16 @@ The simulation tracks the convergence of the escape probability and blackness to
 ## 🚀 How to Run
 
 ### Prerequisites
-You need Python and the scientific computing stack installed.
-
     pip install -r requirements.txt
 
 ### Running the Simulation
     python src/monte_carlo_slab.py
 
-This will print the comparison table to the console and save the convergence plots as an image file.
+This script will:
+1. Calculate the exact analytical values.
+2. Run Monte Carlo simulations for $N=10^2, 10^4, 10^6$.
+3. Print a comparison table to the console.
+4. Save the convergence plot to the `docs/` folder.
 
 ---
 
@@ -76,4 +74,4 @@ This will print the comparison table to the console and save the convergence plo
 
 ---
 
-*For detailed derivations of the exponential integral solution, please refer to the [Project Report](docs/Montecarlo.pdf).*
+*For detailed physics and derivations, please refer to the [Project Report](docs/Montecarlo.pdf).*
