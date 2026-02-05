@@ -41,7 +41,7 @@ Comparison of Monte Carlo results with the Analytical Reference ($P_{esc} \appro
 
     neutron-transport-monte-carlo/
     ├── docs/
-    │   ├── Montecarlo.pdf         # Detailed project report
+    │   ├── Escapeprobablity-montecarlo.pdf         # Detailed project report
     │   └── fig1_convergence.png   # Convergence graph
     ├── src/
     │   └── monte_carlo_slab.py    # Main simulation code
