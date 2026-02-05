@@ -7,12 +7,11 @@ import os
 # Create docs folder if not exists
 os.makedirs("docs", exist_ok=True)
 
-# giben parameter
+# GIVEN PARAMETERS
 SIGMA_A = 0.5    
 H = 3.0         
 S_BAR = 2.0 * H
 N_VALUES = [10**2, 10**4, 10**6]
-
 
 def analytic_solution(sigma_a, h):
     # Analytic solution for escape probability and blackness
@@ -22,17 +21,16 @@ def analytic_solution(sigma_a, h):
     beta = sigma_a * (2.0 * h) * p_esc
     return p_esc, beta
 
-
 def monte_carlo_run(N, sigma_a, h, seed):
     rng = np.random.default_rng(seed)
 
-    # Neutron startpositions
+    # Neutron start positions
     z = rng.uniform(0.0, h, size=N)
 
     # Direction cosine
     mu = rng.uniform(-1.0, 1.0, size=N)
 
-    # avoid division by zero
+    # Avoid division by zero
     tiny = 1e-12
     mu[np.abs(mu) < tiny] = np.sign(mu[np.abs(mu) < tiny]) * tiny
 
@@ -56,107 +54,59 @@ def monte_carlo_run(N, sigma_a, h, seed):
 
     return p_mc, beta_mc, sigma_p, sigma_beta
 
+# --- MAIN EXECUTION ---
+if __name__ == "__main__":
+    p_an, beta_an = analytic_solution(SIGMA_A, H)
 
-p_an, beta_an = analytic_solution(SIGMA_A, H)
+    print(f"{'Analytical Reference':<25} | P_esc = {p_an:.6f} | beta = {beta_an:.6f}")
+    print("-" * 60)
 
-print("Analytical reference values:")
-print("P_esc =", p_an)
-print("beta  =", beta_an)
-print()
+    results = []
 
-results = []
+    for N in N_VALUES:
+        seed = 42 + N
+        p_mc, beta_mc, sig_p, sig_beta = monte_carlo_run(N, SIGMA_A, H, seed)
 
-for N in N_VALUES:
-    seed = 42 + N
-    p_mc, beta_mc, sig_p, sig_beta = monte_carlo_run(N, SIGMA_A, H, seed)
+        err_p = abs(p_mc - p_an) / p_an
+        err_beta = abs(beta_mc - beta_an) / beta_an
 
-    err_p = abs(p_mc - p_an) / p_an
-    err_beta = abs(beta_mc - beta_an) / beta_an
+        results.append({
+            "N_T": N,
+            "P_esc_MC": p_mc,
+            "beta_MC": beta_mc,
+            "sigma_P": sig_p,
+            "sigma_beta": sig_beta,
+            "rel_err_P": err_p,
+            "rel_err_beta": err_beta
+        })
 
-    results.append({
-        "N_T": N,
-        "P_esc_MC": p_mc,
-        "beta_MC": beta_mc,
-        "sigma_P": sig_p,
-        "sigma_beta": sig_beta,
-        "rel_err_P": err_p,
-        "rel_err_beta": err_beta
-    })
+    df = pd.DataFrame(results)
 
-df = pd.DataFrame(results)
+    print("Monte Carlo Results:")
+    print(df.to_string())
+    print("\nGenerating plot in 'docs/' folder...")
 
-print("Monte Carlo results:")
-print(df.to_string())
-print()
+    # ---- PLOTTING (Only Convergence Plot) ----
+    N = df["N_T"].to_numpy()
+    Pmc = df["P_esc_MC"].to_numpy()
+    Bmc = df["beta_MC"].to_numpy()
+    sP = df["sigma_P"].to_numpy()
+    sB = df["sigma_beta"].to_numpy()
+    
+    P_lo, P_hi = p_an - 1.96 * sP, p_an + 1.96 * sP
 
+    fig, ax1 = plt.subplots(figsize=(10, 6))
 
-# ---- plotting ----
-N = df["N_T"].to_numpy()
-Pmc = df["P_esc_MC"].to_numpy()
-Bmc = df["beta_MC"].to_numpy()
-sP = df["sigma_P"].to_numpy()
-sB = df["sigma_beta"].to_numpy()
-errP = df["rel_err_P"].to_numpy()
+    ax1.plot(N, Pmc, marker="o", linewidth=2, label="Monte Carlo")
+    ax1.axhline(p_an, linestyle="--", color='r', linewidth=2, label=f"Analytical ({p_an:.4f})")
+    ax1.fill_between(N, P_lo, P_hi, alpha=0.2, label="95% CI")
+    ax1.set_xscale("log")
+    ax1.set_xlabel("Number of particles $N_T$")
+    ax1.set_ylabel("Escape probability $P_{esc}$")
+    ax1.set_title("Convergence of Escape Probability ($P_{esc}$)")
+    ax1.grid(True, which="both", alpha=0.4)
+    ax1.legend()
 
-P_lo, P_hi = p_an - 1.96 * sP, p_an + 1.96 * sP
-B_lo, B_hi = beta_an - 1.96 * sB, beta_an + 1.96 * sB
-
-# Figure 1: convergence plots
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5))
-
-ax1.plot(N, Pmc, marker="o", linewidth=2, label="Monte Carlo")
-ax1.axhline(p_an, linestyle="--", color='r', linewidth=2, label="Analytical")
-ax1.fill_between(N, P_lo, P_hi, alpha=0.2, label="95% CI")
-ax1.set_xscale("log")
-ax1.set_xlabel("Number of particles $N_T$")
-ax1.set_ylabel("Escape probability $P_{esc}$")
-ax1.set_title("(a) $P_{esc}$ convergence")
-ax1.grid(True, which="both", alpha=0.4)
-ax1.legend()
-
-ax2.plot(N, Bmc, marker="s", linewidth=2, label="Monte Carlo")
-ax2.axhline(beta_an, linestyle="--", color='r', linewidth=2, label="Analytical")
-ax2.fill_between(N, B_lo, B_hi, alpha=0.2, label="95% CI")
-ax2.set_xscale("log")
-ax2.set_xlabel("Number of particles $N_T$")
-ax2.set_ylabel("Blackness $\\beta$")
-ax2.set_title("(b) $\\beta$ convergence")
-ax2.grid(True, which="both", alpha=0.4)
-ax2.legend()
-
-plt.tight_layout()
-plt.savefig("docs/fig1_convergence.png")
-print("Saved Figure 1 to docs/fig1_convergence.png")
-
-# Figure 2: relative error scaling
-plt.figure(figsize=(7.5, 5.5))
-plt.loglog(N, 100 * errP, marker="o", linewidth=2, label="Relative error (%)")
-
-ref = (100 * errP[0]) * np.sqrt(N[0] / N)
-plt.loglog(N, ref, linestyle=":", linewidth=2, label="$\\sim 1/\\sqrt{N_T}$")
-
-plt.xlabel("Number of particles $N_T$")
-plt.ylabel("Relative error (%)")
-plt.title("Relative error scaling")
-plt.grid(True, which="both", alpha=0.4)
-plt.legend()
-plt.tight_layout()
-plt.savefig("docs/fig2_rel_error.png")
-print("Saved Figure 2 to docs/fig2_rel_error.png")
-
-
-# Figure 3: statistical uncertainty
-plt.figure(figsize=(7.5, 5.5))
-plt.loglog(N, sP, marker="d", linewidth=2, label="$\\sigma_P$")
-
-ref_s = sP[0] * np.sqrt(N[0] / N)
-plt.loglog(N, ref_s, linestyle=":", linewidth=2, label="$\\sim 1/\\sqrt{N_T}$")
-
-plt.xlabel("Number of particles $N_T$")
-plt.ylabel("Statistical uncertainty or sigma")
-plt.title("Uncertainty scaling")
-plt.grid(True, which="both", alpha=0.4)
-plt.legend()
-plt.tight_layout()
-plt.savefig("docs/fig3_uncertainty.png")
-print("Saved Figure 3 to docs/fig3_uncertainty.png")
+    plt.tight_layout()
+    plt.savefig("docs/fig1_convergence.png")
+    print("Saved Figure 1 to docs/fig1_convergence.png")
